@@ -5,24 +5,23 @@ import java.util.Random;
 import javax.swing.*;
 
 public class FlappyCat extends JPanel implements ActionListener, KeyListener {
-    int boardWidth = 360;
-    int boardHeight = 640;
+//    int boardWidth = 360;
+//    int boardHeight = 640;
+
+    int boardWidth = 800;
+    int boardHeight = 600;
 
     //images
     Image backgroundImg;
     Image catImg;
-    //Image topPipeImg;
     Image[] topPipeImgs = new Image[3]; // Array to store different top pipe images
-
-    //Image bottomPipeImg;
     Image[] bottomPipeImgs = new Image[3];
-
 
     //cat class
     int catX = boardWidth/8;
     int catY = boardWidth/2;
-    int catWidth = 43;
-    int catHeight = 24;
+    int catWidth = 60;
+    int catHeight = 30;
 
     class Cat {
         int x = catX;
@@ -70,26 +69,24 @@ public class FlappyCat extends JPanel implements ActionListener, KeyListener {
     double score = 0;
 
     FlappyCat() {
-        //setPreferredSize(new Dimension(boardWidth, boardHeight));
-        setPreferredSize(new Dimension(360, 640));
+        setPreferredSize(new Dimension(boardWidth, boardHeight));
         // setBackground(Color.blue);
         setFocusable(true);
         addKeyListener(this);
 
         //load images
-        //backgroundImg = new  ImageIcon(Objects.requireNonNull(getClass().getResource("flappybirdbg.png"))).getImage();
         backgroundImg = new ImageIcon(getClass().getResource("/image/flappybirdbg.png")).getImage();
         catImg = new ImageIcon(getClass().getResource("/image/flappycat.png")).getImage();
+
         //topPipeImg = new ImageIcon(getClass().getResource("/image/toppipe.png")).getImage();
         topPipeImgs[0] = new ImageIcon(getClass().getResource("/image/toppipe.png")).getImage();
-        topPipeImgs[1] = new ImageIcon(getClass().getResource("/image/toppipe2.png")).getImage();
-        topPipeImgs[2] = new ImageIcon(getClass().getResource("/image/toppipe3.png")).getImage();
+        topPipeImgs[1] = new ImageIcon(getClass().getResource("/image/toppipe.png")).getImage();
+        topPipeImgs[2] = new ImageIcon(getClass().getResource("/image/toppipe.png")).getImage();
 
         //bottomPipeImg = new ImageIcon(getClass().getResource("/image/bottompipe.png")).getImage();
         bottomPipeImgs[0] = new ImageIcon(getClass().getResource("/image/bottompipe.png")).getImage();
-        bottomPipeImgs[1] = new ImageIcon(getClass().getResource("/image/bottompipe2.png")).getImage();
-        bottomPipeImgs[2] = new ImageIcon(getClass().getResource("/image/bottompipe3.png")).getImage();
-
+        bottomPipeImgs[1] = new ImageIcon(getClass().getResource("/image/bottompipe.png")).getImage();
+        bottomPipeImgs[2] = new ImageIcon(getClass().getResource("/image/bottompipe.png")).getImage();
 
         //cat
         cat = new Cat(catImg);
@@ -106,36 +103,63 @@ public class FlappyCat extends JPanel implements ActionListener, KeyListener {
         placePipeTimer.start();
 
         //game timer
-        gameLoop = new Timer(1000/60, this); //how long it takes to start timer, milliseconds gone between frames
+        gameLoop = new Timer(1800/60, this); //how long it takes to start timer, milliseconds gone between frames
         gameLoop.start();
 
-        addKeyListener(this);
+        addKeyListener(this); // เพิ่ม KeyListener ให้กับ JFrame
         setFocusable(true);
+        requestFocus(); // ขอให้ JFrame ได้รับการโฟกัสเมื่อเปิดแอปพลิเคชัน
+
+        // Create restart button
+        JButton restartButton = new JButton("Restart");
+        restartButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                restartGame();
+            }
+        });
+        restartButton.setFocusable(false); // Ensure button doesn't steal focus from the panel
+
+        // Add restart button to a panel at the bottom of the frame
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(restartButton);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    void placePipes() {
-        //(0-1) * pipeHeight/2.
-        // 0 -> -128 (pipeHeight/4)
-        // 1 -> -128 - 256 (pipeHeight/4 - pipeHeight/2) = -3/4 pipeHeight
-        int randomPipeY = (int) (pipeY - pipeHeight/4 - Math.random()*(pipeHeight/2));
-        int openingSpace = boardHeight/4;
+    private void restartGame() {
+        // Reset game conditions
+        cat.y = catY;
+        velocityY = 0;
+        pipes.clear();
+        gameOver = false;
+        score = 0;
 
-        //Pipe topPipe = new Pipe(topPipeImg);
-        Pipe topPipe = new Pipe(topPipeImgs[random.nextInt(3)]); // Randomly choose a top pipe image
+        // Restart timers
+        gameLoop.start();
+        placePipeTimer.start();
 
-        topPipe.y = randomPipeY;
+        // Request focus for the panel to ensure key events are captured
+        requestFocus();
+    }
+
+    public void placePipes() {
+        int randomPipeY = (int) (pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2));
+        int openingSpace = boardHeight / 4;
+
+        // ปรับเพิ่มความยากโดยการสุ่มความสูงของท่อและระยะห่างระหว่างท่อ
+        int randomHeightOffset = random.nextInt(boardHeight / 4); // สุ่มความสูงเพิ่มเติมสำหรับท่อ
+        int randomOpeningOffset = random.nextInt(boardHeight / 4); // สุ่มระยะห่างของช่องระหว่างท่อ
+
+        Pipe topPipe = new Pipe(topPipeImgs[random.nextInt(3)]);
+        topPipe.y = randomPipeY + randomHeightOffset; // เพิ่มความสูงสุ่ม
         pipes.add(topPipe);
 
-        //Pipe bottomPipe = new Pipe(bottomPipeImg);
         Pipe bottomPipe = new Pipe(bottomPipeImgs[random.nextInt(3)]);
-
-        bottomPipe.y = topPipe.y  + pipeHeight + openingSpace;
+        bottomPipe.y = topPipe.y + pipeHeight + openingSpace + randomOpeningOffset; // เพิ่มระยะห่างสุ่ม
         pipes.add(bottomPipe);
     }
 
-
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    public void paint(Graphics g) {
+        super.paint(g);
         draw(g);
     }
 
@@ -162,13 +186,12 @@ public class FlappyCat extends JPanel implements ActionListener, KeyListener {
         g.setFont(new Font("Arial", Font.BOLD,  32));
         if (gameOver) {
             g.setColor(Color.red);
-            g.setFont(new Font("Jokerman", Font.BOLD , 32));
+            g.setFont(new Font("Arial", Font.BOLD , 32));
             g.drawString("Game Over: " + String.valueOf((int) score), 10, 35);
         }
         else {
             g.drawString(String.valueOf((int) score), 10, 35);
         }
-
     }
 
     public void move() {
@@ -219,12 +242,10 @@ public class FlappyCat extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            // System.out.println("JUMP!");
-            velocityY = -9;
+        if (!gameOver && e.getKeyCode() == KeyEvent.VK_SPACE) {
+                velocityY = -9; // สูงสุดความเร็วที่แมวกระโดด
 
             if (gameOver) {
-                //restart game by resetting conditions
                 cat.y = catY;
                 velocityY = 0;
                 pipes.clear();
