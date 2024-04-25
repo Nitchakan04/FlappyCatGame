@@ -3,8 +3,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import javax.swing.*;
@@ -24,17 +22,16 @@ public class Main extends Application {
         launch(args);
     }
 
-    public void startGame(ActionEvent actionEvent)throws IOException {
-
+    public void startGame(ActionEvent actionEvent) throws IOException {
         JFrame gameFrame = new JFrame("Flappy Cat");
         gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            FlappyCat flapCat = new FlappyCat();
-            gameFrame.add(flapCat);
+        FlappyCat flapCat = new FlappyCat();
+        gameFrame.add(flapCat);
 
-            gameFrame.pack();
-            gameFrame.setLocationRelativeTo(null);
-            gameFrame.setVisible(true);
+        gameFrame.pack();
+        gameFrame.setLocationRelativeTo(null);
+        gameFrame.setVisible(true);
 
     }
 }
